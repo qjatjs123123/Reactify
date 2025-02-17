@@ -214,5 +214,13 @@
     "ticketDate": "2025-02-17",
     "departureDate": "2025-02-28",
     "canceled": false
+  },
+  {
+    "id": 28,
+    "name": "테스트",
+    "travelType": "지구 저궤도 여행",
+    "ticketDate": "2025-02-17",
+    "departureDate": "2025-02-20",
+    "canceled": false
   }
 ]
