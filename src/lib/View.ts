@@ -1,13 +1,15 @@
 import { html } from "./html";
 import ViewStore from "./ViewStore";
 
+type stateType = { [key: string]: unknown }
+
 export abstract class View<T> {
-  state: { [key: string]: any }; 
+  private state: stateType; 
   protected viewStore;
-  key = 0;
-  _element: HTMLElement | null = null;
-  queue: any[];
-  isBatching:boolean = false;
+  private queue: [string, unknown][];
+  private isBatching:boolean = false;
+  private key = 0;
+  public _element: HTMLElement | null = null;
 
   constructor(public props: T) {
     this.state = {};  
@@ -17,7 +19,7 @@ export abstract class View<T> {
     
   }
 
-  setState(key: string, value: any) {
+  setState(key: string, value: unknown) {
     if (JSON.stringify(this.state[key]) === JSON.stringify(value)) return;
 
     this.queue.push([key, value]);
@@ -28,12 +30,6 @@ export abstract class View<T> {
         this.flush();
       })
     }
-
-    // console.log(key, value,"out");
-    // if (JSON.stringify(this.state[key]) === JSON.stringify(value)) return;
-    // console.log(key, value,"in");
-    // this.state[key] = value;
-    // this._element?.replaceWith(this.render()!);
   }
 
   private flush() {
@@ -43,11 +39,12 @@ export abstract class View<T> {
       this.state[key] = value;
     }
     this.isBatching = false;
-    // console.log(this.render()!);
+
     this._element?.replaceWith(this.render()!);
   }
 
-  getState(key: string): any {
+
+  getState<K extends keyof stateType>(key: K): stateType[K]  {
     return this.state[key];
   }
 
@@ -56,15 +53,17 @@ export abstract class View<T> {
   }
 
 
-  render() {
+  render() : HTMLElement{
     if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
 
     const wrapEl = document.createElement('div');
     wrapEl.classList.add('isArray');
     wrapEl.append(this.template().toHtml());
     
-    this._element = wrapEl.children[0] as HTMLElement;
+    const firstChild = wrapEl.children[0];
     
+    if (firstChild instanceof HTMLElement) this._element = firstChild ;
+  
     this.onRender();
 
     return this._element;
@@ -73,11 +72,11 @@ export abstract class View<T> {
 
 
 
-  removeArray() {
+  removeArray():void {
     this._element?.querySelectorAll('.isArray').forEach(isArray => {
-      const dropdownContainer = isArray.parentNode as HTMLElement | null;
+      const dropdownContainer = isArray.parentNode;
         
-      if (!dropdownContainer) return;
+      if (!dropdownContainer || !(dropdownContainer instanceof HTMLElement)) return;
   
       
       Array.from(isArray.children).forEach(child => dropdownContainer.appendChild(child));
