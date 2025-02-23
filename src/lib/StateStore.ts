@@ -1,8 +1,11 @@
 import { View } from "./View";
 
+type stateType = Record<string, unknown>
+type subscribeType = Record<string, Set<View<any>>>;
+
 export class StateStore {
-  #state!: Record<string, unknown>;  
-  #subscribers!: Record<string, Set<View<any>>>;
+  #state!: stateType;  
+  #subscribers!: subscribeType;
   static #instance : StateStore | null = null;
 
   constructor() {
@@ -27,14 +30,14 @@ export class StateStore {
     this.#state[key] = state;
   }
 
-  subscribe(key: string, component: View<any>) {
+  subscribe(key: string, component: View<unknown>) {
     if (!this.#subscribers[key]) {
       this.#subscribers[key] = new Set();
     }
     this.#subscribers[key].add(component);
   }
 
-  #notify(key : string) { 
+  #notify<K extends keyof subscribeType>(key : K) { 
     if (this.#subscribers[key]) {
       this.#subscribers[key].forEach((component) => {
         component._element?.replaceWith(component.render()!);
@@ -42,7 +45,7 @@ export class StateStore {
     }
   }
 
-  setState(key: string, newValue: unknown) {
+  setState<K extends keyof stateType>(key: K, newValue: unknown) {
     const currentValue = this.#state[key];
 
     if (JSON.stringify(currentValue) === JSON.stringify(newValue)) return;
@@ -50,7 +53,7 @@ export class StateStore {
     this.#notify(key);
   }
 
-  getState(key : string) {
+  getState<K extends keyof stateType>(key : K) {
     return this.#state[key];
   }
 }
