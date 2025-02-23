@@ -1,12 +1,21 @@
 import { View } from "./View";
 
+type nodeListType = Map<number, HTMLElement>;
+type funcListType = [Function, number, string] | [];
+interface stringifyParams {
+  value: unknown;
+  funcList: funcListType[];
+  nodeList: nodeListType;  
+  str: string;
+}
+
 class Tmpl {
   constructor(
     private strings: TemplateStringsArray,
     private values: unknown[]
   ) {}
 
-  private _parseValue(value: unknown) {
+  private _parseValue(value: unknown) : HTMLElement | unknown {
     
     switch (true) {
       case value instanceof View:
@@ -20,20 +29,16 @@ class Tmpl {
     }
   }
 
-  private _mergeArray = (value: unknown) => {
-    if (Array.isArray(value)) {
-      const divEl = document.createElement('div') as HTMLDivElement;
-      divEl.classList.add('isArray');
+  private _mergeArray (value: unknown[]) : HTMLElement {
+    const divEl = document.createElement('div');
+    divEl.classList.add('isArray');
 
-      value.forEach(item => {
-        const htmlElement = this._parseValue(item);
-        divEl.appendChild(htmlElement); 
-      });
-  
-      return divEl;
-    }
-  
-    return value;
+    value.forEach(item => {
+      const htmlElement = this._parseValue(item);
+
+      if (htmlElement instanceof HTMLElement) divEl.appendChild(htmlElement); 
+    });
+    return divEl;
   };
 
   toHtml(): HTMLElement {
@@ -41,14 +46,16 @@ class Tmpl {
     this.replaceNode(wrapEl, nodeList);
     this.eventBind(wrapEl, funcList)
     
-    return wrapEl.firstElementChild as HTMLElement;
+    const firstChild = wrapEl.firstElementChild;
+
+    if (firstChild instanceof HTMLElement) return firstChild;
+    return document.createElement('div');
   }
 
-  private eventBind(wrapEl: HTMLElement, funcList: [Function, number, string][]) {
+  private eventBind(wrapEl: HTMLElement, funcList: funcListType[]) {
     funcList.forEach(([func, funcId, eventType]) => {
       
-      const funcEl = wrapEl.querySelector(`[data-func-id="${funcId}"]`) as HTMLElement;
-      // console.log(funcEl, eventType, func);
+      const funcEl = wrapEl.querySelector(`[data-func-id="${funcId}"]`);
       funcEl.addEventListener(eventType, (event) => {
         func(event);  
       });
@@ -57,47 +64,50 @@ class Tmpl {
   }
   
 
-  private replaceNode(wrapEl: HTMLElement, nodeList: Map<number, HTMLElement>) {
+  private replaceNode(wrapEl: HTMLElement, nodeList: nodeListType) {
     nodeList.forEach((node, id) => {
       wrapEl.querySelector(`#custom-id-${id}`)?.replaceWith(node);
     });
   }
 
-  private _stringifyValue(value: unknown, funcList, nodeList, str: string): string {
+  private _stringifyValue({ value, funcList, nodeList, str } : stringifyParams): string {
     if (value instanceof Function) {
-      return this._handleFunction(value, funcList, str);
+      return this._handleFunction({value, funcList, str});
     } else if (value instanceof HTMLElement) {
-      return this._handleHTMLElement(value, nodeList, str);
+      return this._handleHTMLElement({value, nodeList, str});
     } else {
       return str + value;
     }
   }
   
-  private _handleFunction(value: Function, funcList: any[], str: string): string {
+  private _handleFunction({value, funcList, str} : Partial<stringifyParams>): string {
+    if (!(value instanceof Function)) return '';
+
     const funcId = funcList.length;
     const arr = str.split(" ");
     const eventType = arr.pop()?.split("=")[0];
     str = arr.join(" ");
-  
     funcList.push([value, funcId, eventType]);
     return str + ` data-func-id=${funcId}`;
   }
   
-  private _handleHTMLElement(value: HTMLElement, nodeList: Map<number, HTMLElement>, str: string): string {
+  private _handleHTMLElement({value, nodeList, str} : Partial<stringifyParams>): string {
+    if (!(value instanceof HTMLElement)) return '';
+
     const nodeId = nodeList.size;
     nodeList.set(nodeId, value);
     return str + `<div id="custom-id-${nodeId}"></div>`;
   }
 
-  private buildHTMLContent(): [HTMLElement, Map<number, HTMLElement>, any[]] {
+  private buildHTMLContent(): [HTMLElement, nodeListType, funcListType[]] {
     const wrapEl = document.createElement("div");
-    const nodeList: Map<number, HTMLElement> = new Map();
-    const funcList: any = []
+    const nodeList: nodeListType = new Map();
+    const funcList: funcListType = []
 
     let template = "";
     [...this.strings].forEach((str, i) => {
-      const newValue = this._parseValue(this.values[i] ?? "");
-      template += this._stringifyValue(newValue, funcList, nodeList, str);
+      const value = this._parseValue(this.values[i] ?? "");
+      template += this._stringifyValue({value, funcList, nodeList, str});
     });
 
     wrapEl.innerHTML = template;
