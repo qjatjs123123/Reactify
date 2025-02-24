@@ -48,12 +48,12 @@ export abstract class View<T> {
     return this.state[key];
   }
 
-  template() {
+  template() : any {
     return html``;
   }
 
 
-  render() : HTMLElement{
+  render() : any{
     if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
 
     const wrapEl = document.createElement('div');

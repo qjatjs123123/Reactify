@@ -118,3 +118,12 @@ class Tmpl {
    
 export const html = (strings: TemplateStringsArray, ...values: unknown[]) =>
   new Tmpl(strings, values);
+
+export const htmlAsync = (strings: TemplateStringsArray, ...values: unknown[]) => {
+  return new Promise<Tmpl>((resolve) => {
+    setTimeout(() => {    
+      const tmpl = new Tmpl(strings, values);
+      resolve(tmpl);  
+    }, 0);  
+  });
+};

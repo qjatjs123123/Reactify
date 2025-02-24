@@ -1,30 +1,48 @@
 import { View } from "../lib/View";
-import { html } from "../lib/html";
+import {  htmlAsync } from "../lib/html";
 import Route from '../lib/Route';
-import { SearchView } from "../components/search/SearchView";
-import { TicketView } from "../components/ticket/TicketView";
+
 
 export default class BrowserRoute extends View<null> {
   private searchView;
   private ticketView;
-  private route : Route;
-  
+  private route: Route;
+
   constructor() {
     super(null);
     this.route = Route.getInstance(this);
-    this.searchView = new SearchView();
-    this.ticketView = new TicketView();
+    this.searchView = null;
+    this.ticketView = null;
   }
 
-  override template() {
+  async render() : Promise<HTMLElement>{
+    if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
+
+    const wrapEl = document.createElement('div');
+    wrapEl.classList.add('isArray');
+
+    wrapEl.append(( await this.template()).toHtml());
     
-    return html`
-    <section>
-      ${this.route.browserRouter(
-        {'/' : this.searchView},
-        {'/ticket' : this.ticketView}
-      )}
-    </section>
+    const firstChild = wrapEl.children[0];
+    
+    if (firstChild instanceof HTMLElement) this._element = firstChild ;
+
+    this.onRender();
+    document.querySelector(".section_responsive")?.appendChild(this._element);
+    
+    return this._element;
+
+  }
+  
+
+   async template() {
+
+    const h =  await htmlAsync`
+      <section>
+        ${ await this.route.browserRouter()}
+      </section>
     `;
+
+    return h;
   }
 }
