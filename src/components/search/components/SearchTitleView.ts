@@ -8,13 +8,13 @@ export class SearchTitleView extends View<null> {
   
   constructor() {
     super(null);
-    this.timerView  = new TimerView();
+
   }
 
   override template() {
     return html`
     <div class="time-container">      
-      ${this.timerView}
+
     </div>  
     `;
   }

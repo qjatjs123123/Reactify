@@ -20,7 +20,7 @@ export abstract class View<T> {
   }
 
   setState(key: string, value: unknown) {
-    if (JSON.stringify(this.state[key]) === JSON.stringify(value)) return;
+    if (Object.is(this.state[key], value)) return;
     // this.flush();
     this.queue.push([key, value]);
     if (!this.isBatching) {
