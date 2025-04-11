@@ -138,7 +138,7 @@ export class DatePicker extends View<DatePickerData> {
 
   override template() {
     let toggle = this.getState('toggle');
-    
+    console.log("render")
     return html`
     <div class="input-container">
         <input click=${() => this.toggleSwitch()} type="text" id="input-date" placeholder="날짜를 선택하세요..." readonly/>

@@ -1,4 +1,5 @@
 import { View } from "./View";
+import { registerHandler, getFuncId } from "../util/eventBind";
 
 type nodeListType = Map<number, HTMLElement>;
 type funcListType = [Function, number, string] | [];
@@ -56,10 +57,12 @@ class Tmpl {
     funcList.forEach(([func, funcId, eventType]) => {
       
       const funcEl = wrapEl.querySelector(`[data-func-id="${funcId}"]`);
-      funcEl.addEventListener(eventType, (event) => {
-        func(event);  
-      });
-      funcEl.removeAttribute("data-func-id");
+      registerHandler(funcId, func);
+
+      // funcEl.addEventListener(eventType, (event) => {
+      //   func(event);  
+      // });
+      // funcEl.removeAttribute("data-func-id");
     });
   }
   
@@ -83,7 +86,7 @@ class Tmpl {
   private _handleFunction({value, funcList, str} : Partial<stringifyParams>): string {
     if (!(value instanceof Function)) return '';
 
-    const funcId = funcList.length;
+    const funcId = getFuncId();
     const arr = str.split(" ");
     const eventType = arr.pop()?.split("=")[0];
     str = arr.join(" ");

@@ -26,9 +26,9 @@ export class TimerView extends View<null> {
   private startTimer() {
     if (this.timer) return; 
 
-    this.timer = setInterval(() => {
-      this.calCurrentTime();
-    }, 1000);
+    // this.timer = setInterval(() => {
+    //   this.calCurrentTime();
+    // }, 1000);
   }
 
   override template() {

@@ -222,5 +222,21 @@
     "ticketDate": "2025-02-17",
     "departureDate": "2025-02-20",
     "canceled": false
+  },
+  {
+    "id": 29,
+    "name": "홍범선",
+    "travelType": "지구 저궤도 여행",
+    "ticketDate": "2025-03-06",
+    "departureDate": "2025-03-31",
+    "canceled": true
+  },
+  {
+    "id": 30,
+    "name": "홍범선",
+    "travelType": "달 여행",
+    "ticketDate": "2025-03-06",
+    "departureDate": "2025-03-07",
+    "canceled": false
   }
 ]

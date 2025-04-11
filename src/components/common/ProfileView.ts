@@ -53,12 +53,11 @@ export class ProfileView extends View<null> {
   }
 
   override template () {
-    this.key = incrementUniqueKey();
     let picture = (this.#stateStore.getState('profile') as ProfileData).picture ;
     picture = picture==='' ? '/login.png' : picture;
 
     return html`
-      <div data-id=${this.key} class="profile-container">
+      <div class="profile-container">
         <img class="profile-img" src=${picture.endsWith('/') ? picture.slice(0, -1) : picture} alt="유저 프로필 이미지"/>
         <svg  stroke-width="0" viewBox="0 0 24 24" height="1.5em" width="1.5em" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"></path></svg>
 

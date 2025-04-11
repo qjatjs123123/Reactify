@@ -1,14 +1,14 @@
 import { App } from './pages/App';
 import { StateStore } from './lib/StateStore';
 import getCurrentTime from './util/timer';
-
+import { eventBind } from './util/eventBind';
 
 const stateStore = StateStore.getInstance();
 const $app = document.getElementById('app');
 
 if ($app) {
   enrollState();
-
+  eventBind();
   const app = new App();
   $app.append(app.render()!);
   
