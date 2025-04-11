@@ -22,6 +22,7 @@ export class DatePicker extends View<DatePickerData> {
     this.setState("toggle", false);
 
     this.changeYearMonth((new Date()).getFullYear(), (new Date()).getMonth() + 1);
+
   }
 
   private checkLeapYear(): boolean {

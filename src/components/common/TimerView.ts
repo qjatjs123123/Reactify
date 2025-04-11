@@ -10,13 +10,14 @@ interface timerData {
 
 export class TimerView extends View<null> {
   #stateStore;
-  private timer: any = null;
+  public timer: any = null;
+  public _viewId;
 
-  constructor() {
+  constructor(id) {
     super(null);
     this.#stateStore = StateStore.getInstance();
     this.#stateStore.subscribe('timer', this);
-    this.startTimer();
+    this._viewId = id;
   }
 
   private calCurrentTime() {
@@ -26,10 +27,28 @@ export class TimerView extends View<null> {
   private startTimer() {
     if (this.timer) return; 
 
-    // this.timer = setInterval(() => {
-    //   this.calCurrentTime();
-    // }, 1000);
+    this.timer = setInterval(() => {
+      console.log("1")
+      this.calCurrentTime();
+    }, 1000);
   }
+
+  protected onRender(): void {
+    this.viewStore.setViewMap(this._viewId, this);
+    
+    this.startTimer();
+  }
+
+  protected onUnmount(): void {
+    if (!this.viewStore.getViewMap(this._viewId)) return;
+
+    const prev_view = this.viewStore.getViewMap(this._viewId)
+    if (prev_view) {
+      clearInterval(prev_view.timer);
+      prev_view.timer = null;
+    }
+  }
+
 
   override template() {
     const time = (this.#stateStore.getState('timer') as timerData).time;

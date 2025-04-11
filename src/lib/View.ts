@@ -55,8 +55,10 @@ export abstract class View<T> {
   }
 
 
+
   render() : any{
     if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
+    this.onUnmount();
 
     const wrapEl = document.createElement('div');
     wrapEl.classList.add('isArray');
@@ -91,5 +93,5 @@ export abstract class View<T> {
 
   protected onRender() {}
 
-  
+  protected onUnmount() {}
 }

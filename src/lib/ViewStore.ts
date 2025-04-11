@@ -3,9 +3,11 @@ import { View } from "./View";
 export default class ViewStore {
   private static instance: ViewStore;
   private viewMap: Map<View<any>, [View<any>, HTMLElement | null]>;
+  public _viewMap : Map<String, View<any>>;
 
   private constructor() {
     this.viewMap = new Map();
+    this._viewMap = new Map();
   }
 
   public static getInstance(): ViewStore {
@@ -13,6 +15,18 @@ export default class ViewStore {
       ViewStore.instance = new ViewStore();
     }
     return ViewStore.instance;
+  }
+
+  public setViewMap(key: String, view: View<any>): void {
+    this._viewMap.set(key, view);
+  }
+
+  public removeViewMap(key: String): void {
+    this._viewMap.delete(key);
+  }
+
+  public getViewMap(key: String): View<any> {
+    return this._viewMap.get(key);
   }
 
   public setViewMemo(view: View<any>, element: HTMLElement): void {

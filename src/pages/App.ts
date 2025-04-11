@@ -21,7 +21,7 @@ export class App extends View<null> {
     super(null);
     this.headerView = new HeaderView(); 
     this.memberView = new MemberView();
-    this.timerView = new TimerView();
+    this.timerView = new TimerView("TimerView_1");
     this.navView = new NavView();
     this.snackBarView = new SnackBarView();
     this.browserRoute = new BrowserRoute();
