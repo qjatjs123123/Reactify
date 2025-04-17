@@ -19,7 +19,6 @@ export class SearchView extends View<null> {
     this.searchTableView = new SearchTableView();
     this.searchPageView = new SearchPageView();
     this.loadingView = new LoadingView();
-    this.timerView = new TimerView("TimerView_2");
   }
 
   override template() {
@@ -28,7 +27,6 @@ export class SearchView extends View<null> {
         ${this.searchDateView}
         ${this.searchTableView}
         ${this.searchPageView}
-        ${this.timerView}
       </div>
     `;
   }

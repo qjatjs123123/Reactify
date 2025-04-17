@@ -1,5 +1,6 @@
 import { html } from "./html";
 import ViewStore from "./ViewStore";
+import { funcMap } from "../util/eventBind";
 
 type stateType = { [key: string]: any }
 
@@ -58,6 +59,7 @@ export abstract class View<T> {
 
   render() : any{
     if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
+    this._onUnmount()
     this.onUnmount();
 
     const wrapEl = document.createElement('div');
@@ -74,7 +76,15 @@ export abstract class View<T> {
 
   }
 
+  _onUnmount() {
+    if (!this._element) return;
 
+    const elements = this._element.querySelectorAll('[data-func-id]');
+    elements.forEach(element => {
+      funcMap.delete(element);
+    });
+    console.log(funcMap)
+  }
 
   removeArray():void {
     this._element?.querySelectorAll('.isArray').forEach(isArray => {

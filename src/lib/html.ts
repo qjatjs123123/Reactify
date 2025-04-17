@@ -58,8 +58,8 @@ class Tmpl {
       
       const funcEl = wrapEl.querySelector(`[data-func-id="${funcId}"]`);
       registerHandler(funcEl, func);
-      funcEl.removeAttribute("data-func-id");
-      
+      //funcEl.removeAttribute("data-func-id");
+
       // funcEl.addEventListener(eventType, (event) => {
       //   func(event);  
       // });

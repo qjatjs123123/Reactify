@@ -4,7 +4,7 @@
     "name": "홍범선",
     "travelType": "지구 저궤도 여행",
     "ticketDate": "2025-06-24",
-    "departureDate": "2025-02-19",
+    "departureDate": "2025-04-19",
     "canceled": false
   },
   {
@@ -12,7 +12,7 @@
     "name": "홍범선",
     "travelType": "화성 탐사",
     "ticketDate": "2025-06-15",
-    "departureDate": "2025-03-04",
+    "departureDate": "2025-04-04",
     "canceled": false
   },
   {
@@ -20,7 +20,7 @@
     "name": "홍범선",
     "travelType": "우주 정거장 방문",
     "ticketDate": "2025-06-11",
-    "departureDate": "2025-02-21",
+    "departureDate": "2025-04-21",
     "canceled": false
   },
   {
@@ -237,6 +237,14 @@
     "travelType": "달 여행",
     "ticketDate": "2025-03-06",
     "departureDate": "2025-03-07",
+    "canceled": false
+  },
+  {
+    "id": 31,
+    "name": "홍",
+    "travelType": "지구 저궤도 여행",
+    "ticketDate": "2025-04-17",
+    "departureDate": "2025-04-25",
     "canceled": false
   }
 ]
