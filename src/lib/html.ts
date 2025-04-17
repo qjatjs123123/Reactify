@@ -57,8 +57,9 @@ class Tmpl {
     funcList.forEach(([func, funcId, eventType]) => {
       
       const funcEl = wrapEl.querySelector(`[data-func-id="${funcId}"]`);
-      registerHandler(funcId, func);
-
+      registerHandler(funcEl, func);
+      funcEl.removeAttribute("data-func-id");
+      
       // funcEl.addEventListener(eventType, (event) => {
       //   func(event);  
       // });
