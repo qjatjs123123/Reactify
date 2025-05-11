@@ -8,10 +8,10 @@ export default class Route {
   private searchView;
   private ticketView;
   private root: View<null>;
-  routes:{[key:string]: View<null>} = {};
+  routes: { [key: string]: View<null> } = {};
   #stateStore: StateStore;
 
-  private constructor(root : View<null>) {
+  private constructor(root: View<null>) {
     this.root = root;
     this.#stateStore = new StateStore();
     this.init();
@@ -19,37 +19,41 @@ export default class Route {
     this.ticketView = null;
   }
 
-
-  public static getInstance(root : View<null> | null): Route {
+  public static getInstance(root: View<null> | null): Route {
     if (!Route.instance && root) {
       Route.instance = new Route(root);
     }
     return Route.instance;
   }
 
-  async navigate(url: string) {
+  navigate(url: string) {
     history.pushState({}, "", url);
-    this.root._element?.replaceWith(await this.root.render() as HTMLElement);
+    this.root._element?.replaceWith(this.root.render() as HTMLElement);
   }
 
   init() {
-    DROPBOX_ITEM.forEach(({name, location}) => {
-      if (location === window.location.pathname )
-         this.#stateStore.setState('nav', {nav: name});
-    })
+    DROPBOX_ITEM.forEach(({ name, location }) => {
+      if (location === window.location.pathname)
+        this.#stateStore.setState("nav", { nav: name });
+    });
   }
 
-  async browserRouter() {
+  load(loader) {
+    let status = "pending";
+    let result;
+
+    const promise = loader()
+      .then((module) => result)
+      .catch((error) => error);
+  }
+
+  browserRouter() {
     const path = window.location.pathname;
 
-    if (path === '/') {
-      const { SearchView } = await import('../components/search/SearchView');
-      this.searchView = new SearchView();
-      return this.searchView;
-    } else if (path === '/ticket') {
-      const { TicketView } = await import('../components/ticket/TicketView');
-      this.ticketView = new TicketView();
-      return this.ticketView;
+    if (path === "/") {
+      throw import("../components/search/SearchView");
+    } else if (path === "/ticket") {
+      throw import("../components/ticket/TicketView");
     }
   }
 }

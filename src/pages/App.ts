@@ -34,7 +34,7 @@ export class App extends View<null> {
 
 
   override template() {
-    this.browserRoute.render()
+   
 
     return html`
     
@@ -45,6 +45,7 @@ export class App extends View<null> {
           ${this.barView}
           ${this.timerView} 
           ${this.navView}  
+          ${this.browserRoute}
         </main>
         ${this.snackBarView}
       </div>
