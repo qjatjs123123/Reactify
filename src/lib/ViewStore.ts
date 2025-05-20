@@ -49,11 +49,11 @@ export default class ViewStore {
     const existingView = this.viewMap.get(view);
     if (!existingView) return false; 
 
-    return this.deepPropsEqual(existingView[0], view);
+    return this.isEquals(existingView[0], view);
   }
  
-  private deepPropsEqual(obj1: any, obj2: any): boolean {
-    return JSON.stringify(obj1.props) === JSON.stringify(obj2.props);
+  private isEquals(obj1: any, obj2: any): boolean {
+    return Object.is(obj1, obj2);
   }
 
 }
