@@ -15,9 +15,10 @@
 ## 📝 목차
 - [1. 프로젝트 개요](#1-프로젝트-개요)
 - [2. 프로젝트 화면 구성](#2-프로젝트-화면-구성)
-- [3. 내가 사용한 기술 스택](#4-사용한-기술-스택)
-- [4. 기술적 이슈와 해결 과정](#5-기술적-이슈와-해결-과정)
-
+- [3. 내가 사용한 기술 스택](#3-사용한-기술-스택)
+- [4. 기술적 이슈와 해결 과정](#4-기술적-이슈와-해결-과정)
+- [5. 개선사항](#5-개선사항)
+  
 다음과 같은 목차로 구성되어 있습니다.
 
 
@@ -364,6 +365,7 @@
       }
     }
     ```
+- 코드 스플리팅을 적용하여 번들 사이즈를 줄일 수 있습니다.
   
 - 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
 
@@ -372,13 +374,62 @@
  📌 [Suspense를 이용한 Dynamic Import](https://qjatjs123123.tistory.com/37)
  
 </details>
+
+#### 6)  Browser Router를 활용한 SPA 
+<details>
+  <summary>📌 펼쳐보기 </summary>  
+  <br />
+  
+  <strong>💡 클라이언트 사이드 라우팅 기반의 SPA를 구현해야 하며, 그 결과 React의 Browser Router를 참고했습니다.  </strong>
+
+  - URL은 변경되지만, 새로운 HTML을 요청하지 않고 SPA가 가능합니다.
+
+    > history API를 사용해 URL은 변경되지만, 새로운 HTML을 요청하지 않습니다.
+  
+    > URL에 맞는 컴포넌트를 랜더링 합니다.
+    
+      ```javascript
+      navigate(url: string) {
+        history.pushState({}, "", url);
+  
+        // 여기서 root는 최상위 root가 아닌 Brouser Router 요소를 의미한다.
+        this.root._element?.replaceWith(this.root.render() as HTMLElement);
+      }
+      ```
+  
+- 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
+
 <br />
 
+ 📌 [Browser Router로 SPA 구현하기](https://qjatjs123123.tistory.com/20)
+ 
+</details>
+<br />
+
+## 💁‍♂️ 개선사항
+- 가상 돔을 사용하자
+  > replaceWith로 렌더링을 처리했습니다. 하지만 이러한 방식은 큰 문제가 있습니다. <br /> <br />
+  > 텍스트처럼 단순한 상태 변경이 발생하더라도, 해당 DOM 요소뿐 아니라 그 자식 요소 전체를 새로운 DOM 객체로 생성한 뒤 기존 요소와 통째로 교체하게 됩니다. <br /> <br />
+  > 단순한 변경에도 불구하고 불필요한 연산이 발생하며, 브라우저는 DOM 구조가 바뀌었다고 인식하여 Reflow와 Repaint 같은 렌더링 과정을 다시 실행하게 됩니다. <br /> <br />
+  > 물론, 불필요한 렌더링을 방지하고, 캐싱된 결과값을 재사용하며, DOM 조작은 배치 처리로 묶어 한 번에 수행하도록 최적화를 했지만 React에 비해 성능이 떨어지게 됩니다.  <br /> <br />
+  > 이러한 문제는 가상 돔을 사용하면 개선할 수 있을 것이라 생각합니다. <br />
+  > 가상 돔을 사용하여 실제 DOM요소의 경량화된 버전으로 실제 변경된 요소만 찾고 해당 요소를 교체하는 것이 아닌 업데이트 하는 방식으로 동작합니다. <br />
+  > 결과적으로, Reflow, Repaint 작업이 최소화되고, 효율적으로 렌더링 할 수 있을 것입니다.
+
+- transition 애니메이션 동작하지 않는 문제 
+  > replaceWith로 렌더링을 처리하다 보니 transition 애니메이션이 제대로 동작하지 않는 문제가 발생했습니다.  <br />
+  > 그 이유는 transition이 진행되기 전에 새로운 DOM 요소로 교체되기 때문입니다.  <br /> <br />
+  > 이러한 문제는 replaceWith처럼 DOM을 통째로 교체하는 방식이 아니라, 기존 DOM을 최대한 유지하면서 필요한 부분만 업데이트하는 방식으로 렌더링하면 해결할 수 있습니다. <br />
+  > 대표적인 예로 가상 돔을 활용한 방식이 있습니다.
+  >
+
+<br />
 
 ## 기술 블로그
 
-  - [타입스크립트로 프레임워크 만들기 - 컴포넌트 편](https://qjatjs123123.tistory.com/18)
-  - [타입스크립트로 프레임워크 만들기 - 상태관리 편](https://qjatjs123123.tistory.com/19)
-  - [타입스크립트로 프레임워크 만들기 - 기타 편](https://qjatjs123123.tistory.com/20)
-
+  - [이벤트 위임, 메모리 누수 해제](https://qjatjs123123.tistory.com/58)
+  - [Suspense를 이용한 Dynamic Import](https://qjatjs123123.tistory.com/37)
+  - [Browser Router와 컴포넌트 메모이제이션](https://qjatjs123123.tistory.com/20)
+  - [Auto Batching, 전역 상태 관리](https://qjatjs123123.tistory.com/19)
+  - [태그 리터럴을 활용한 JSX 유사 컴포넌트](https://qjatjs123123.tistory.com/18)
 
