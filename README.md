@@ -99,6 +99,76 @@
  
 </details>
 
+
+#### 2) DOM 조작의 수를 최소화하기 위한 방법
+<details>
+  <summary>📌 펼쳐보기 </summary>  
+  <br />
+  
+  <strong>💡불필요한 렌더링을 방지하고, 캐싱된 결과값을 재사용하며, DOM 조작은 배치 처리로 묶어 한 번에 수행한다.  </strong>
+
+  - Object.is로 참조값을 비교해 상태 변화를 감지합니다.
+    > 객체는 Immutable 해야 합니다. 그 이유는 깊은 객체 비교 비용이 많이 들기 때문입니다.
+    
+    > 상태 변경이 없으면 불필요한 렌더링이 발생하지 않습니다.
+    
+    ```javascript
+    setState(key: string, value: unknown) {
+      if (Object.is(this.state[key], value)) return;
+      ...
+    }
+    ```
+
+  - 계산된 DOM Element를 캐싱하여 재사용합니다.
+    > React에서 React.Memo와 유사한 기능입니다.
+    
+    > 부모 컴포넌트가 렌더링되면, 하위 모든 컴포넌트들도 함께 렌더링됩니다. <br>
+    이 때, 하위 컴포넌트 변경 여부에 따라서 캐싱된 DOM Element를 반환합니다.
+
+    ```javascript
+    render() : any{
+      if (this.viewStore.isValidMemo(this)) return this.viewStore.getViewMemo(this);
+      ...
+    }
+    ```
+
+  - 자동으로 상태 변경을 배치 처리로 묶어 한 번에 수행합니다.
+    > 이벤트 핸들러 내부에 비동기 함수가 포함될 때, 배치처리가 안되는 문제를 해결합니다.
+    
+    > 배치처리가 진행되는 시점은 콜스택이 비워지는 시점입니다.
+    > 
+    > <img src="https://github.com/user-attachments/assets/bb7383f3-7d8a-4b93-88ac-e1dda90cb5f7" width="300" />
+    
+    > 콜스택 범위에서 발생되는 상태 변경을 묶어 처리합니다.
+    ```javascript
+    setState(key: string, value: unknown) {
+      ...
+      this.queue.push([key, value]);
+      if (!this.isBatching) {
+        this.isBatching = true;
+    
+        Promise.resolve().then(() => {
+          this.flush();
+        })
+      }
+    }
+
+    private flush() {
+      while (this.queue.length > 0) {
+        const [key, value] = this.queue.shift();
+        this.state[key] = value;
+      }
+      // render 
+    }
+    ```
+  - 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
+<br />
+
+ 📌 [Auto Batching, 전역 상태 관리](https://qjatjs123123.tistory.com/19)
+ 
+</details>
+
+
 <br />
 
 
