@@ -168,9 +168,211 @@
  
 </details>
 
+#### 3)  보일러플레이트 없이 간편하게 사용할 수 있는 전역 상태 관리
+<details>
+  <summary>📌 펼쳐보기 </summary>  
+  <br />
+  
+  <strong>💡 보일러플레이트가 적고, Recoil처럼 프레임워크간 자연스럽게 어울리는 방식을 만들어야 한다.  </strong>
+
+  - 옵저버 패턴
+    
+    > 상태가 변경되면, 옵저버 패턴을 통해 구독 중인 컴포넌트들이 자동으로 다시 렌더링되도록 했습니다.
+    > <img src="https://github.com/user-attachments/assets/872bbede-847f-485d-9fd7-8567f77322b0" width="600" />
+      ```javascript
+      enroll<T>(key: string, state: T): void {
+        this.#state[key] = state;
+      }
+  
+    subscribe(key: string, component: View<unknown>) {
+        if (!this.#subscribers[key]) {
+          this.#subscribers[key] = new Set();
+        }
+        this.#subscribers[key].add(component);
+      }
+  
+    #notify<K extends keyof subscribeType>(key : K) { 
+        if (this.#subscribers[key]) {
+          this.#subscribers[key].forEach((component) => {
+            component._element?.replaceWith(component.render()!);
+          });
+        }
+      }
+      ```
+    >
+  - 싱글톤 패턴
+    
+    > 애플리케이션 전역에서 하나의 인스턴스만 존재해야 하며, 모든 컴포넌트에서 접근할 수 있어야 합니다.
+      ```javascript
+      constructor() {
+        if (StateStore.#instance) return StateStore.#instance;      
+        StateStore.#instance = this;
+      }
+    
+      static getInstance() {
+        if (!StateStore.#instance) StateStore.#instance = new StateStore();
+        return StateStore.#instance;
+      }
+      ```
+
+ - 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
+ 
+ <br />
+ 
+  📌 [전역 상태 관리](https://qjatjs123123.tistory.com/19)
+ 
+</details>
+
+#### 4)  메모리 누수 문제를 어떻게 개선할 것인가?
+<details>
+  <summary>📌 펼쳐보기 </summary>  
+  <br />
+  
+  <strong>💡 사용자가 타이머와 같은 이벤트 함수를 쉽게 등록하고 정리할 수 있어야 하며, 내부적으로 메모리도 효율적으로 관리되어야 한다.  </strong>
+
+  - mount 시점에 이벤트를 등록할 수 있습니다.
+    
+    > 컴포넌트가 마운트될 때, 사용자가 onRender 함수를 오버라이드함으로써 원하는 로직을 실행할 수 있습니다.
+    
+    > 마운트 시점은 replaceWith가 호출된 직후 시점입니다.
+    
+    > replaceWith는 새로운 DOM 요소를 기존 DOM 요소 교체합니다.
+    >
+    > <img src="https://github.com/user-attachments/assets/24a77790-37ed-4735-b960-05e9a54a1570" width="400" />
+      ```javascript  
+      protected onRender(): void {
+        this.timer = setInterval(() => {
+          // 타이머 함수 로직
+        }, 1000);
+      }
+      ```
+    >
+  - unmount 시점에 등록한 이벤트를 정리할 수 있습니다.
+    
+    > 컴포넌트가 언마운트될 때, 사용자가 onUnmount 함수를 오버라이드함으로써 원하는 로직을 실행할 수 있습니다.
+    
+    > 언마운트 시점은 replaceWith가 호출되기 직전 시점입니다.
+    
+    > replaceWith를 하게 되면 기존 DOM 요소는 없어지기 때문입니다.
+    >
+    > <img src="https://github.com/user-attachments/assets/c488f10f-f29e-400f-91b6-350dcb7768ac" width="400" />  
+      ```javascript
+      protected onUnmount(): void {
+        // 해당 컴포넌트를 캐싱해야지 기존 DOM에 등록된 이벤트 함수를 해제할 수 있다.
+        const prev_view = this.viewStore.getViewMap(this._viewId) 
+      
+        if (prev_view) {
+          clearInterval(prev_view.timer);
+          prev_view.timer = null;
+        }
+      }
+      ```
+  - 이벤트 위임을 내부적으로 적용하여 메모리 최적화를 진행합니다.
+
+    > document 요소에 이벤트 리스너가 등록함으로써 불필요한 리스너 메모리를 줄일 수 있습니다.
+
+    > 왜냐하면, 각 요소마다 이벤트 리스너를 등록하는 것이 아니라 이벤트 버블링 트릭을 사용하여 이벤트 리스너를 하나만 등록할 수 있기 때문입니다.
+    > <img src="https://github.com/user-attachments/assets/36217dee-7873-44e3-9f15-eda89c6c06d1" width="500" />  
+      ```javascript
+     export const funcMap = new Map();
+    
+      export function registerHandler(id ,handler) {
+        funcMap.set(id, handler);
+      }
+      
+      export function eventBind() {
+        document.addEventListener('click', (event) => {
+          const target = event.target as HTMLElement;
+          const handlerInfo = funcMap.get(target);
+         
+          if (handlerInfo) handlerInfo(event);      
+        });
+      }
+      ``` 
+
+ - 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
+ 
+ <br />
+ 
+  📌 [이벤트 위임, 메모리 누수 해제](https://qjatjs123123.tistory.com/58)
+ 
+</details>
+
+#### 5)  Dynamic Import + Suspense를 이용한 컴포넌트 지연 로딩
+<details>
+  <summary>📌 펼쳐보기 </summary>  
+  <br />
+  
+  <strong>💡 필요할 때 컴포넌트를 동적으로 Import 할 수 있어야 하며, 그 과정에서 fallback UI를 보여주어야 한다.  </strong>
+
+  - 동적으로 컴포넌트를 Import 할 수 있습니다.
+
+    > 다이나믹 임포트를 하게 되면 Promise 객체를 반환합니다. <br />
+    > Promise 결과를 처리하는 Suspense 클래스로 throw 해줍니다.
+    ```javascript
+    browserRouter() {
+      const path = window.location.pathname;
+  
+      if (path === "/") {
+        throw import("../components/search/SearchView");
+      } else if (path === "/ticket") {
+        throw import("../components/ticket/TicketView");
+      }
+    }
+    ```
+ - Suspense 클래스를 통해 로딩하는 동안 fallback UI를 보여줍니다.
+
+   > try - catch문으로 throw한 Promise를 처리합니다.
+   
+   > pending 상태, fallback UI로 초기화가 되지만, 결과를 받으면 fullfilled 상태, 결과를 받은 컴포넌트 UI를 저장합니다. 
+
+   > 상태에 따라 UI를 보여줍니다.
+    ```javascript
+      export default class Suspense extends View<null> {
+      BrowserRoute: any;
+      constructor(browserRoute) {
+        // 초기에 pending 상태, fallback UI를 설정합니다.
+        this.setState("state", "pending");
+        this.setState("view", html` <div>pending...</div> `);
+    
+        try {
+          this.BrowserRoute();
+        } catch (promise) {
+          promise.then((module) => {
+            // 결과를 받으면 fullfilled 상태, 기존 UI를 보여줍니다.
+            this.setState("state", "fullfilled");
+            const { SearchView, TicketView } = module;
+    
+            if (SearchView) this.setState("view", new SearchView());
+            else this.setState("view", new TicketView());
+          });
+        }
+      }
+    
+      override template() {
+        const state = this.getState("state");
+        const view = this.getState("view");
+    
+        switch (state) {
+          case "pending":
+            return html`${view}`;
+          case "fullfilled":
+            return html`${view}`;
+          default:
+            return html`<div>error</div>`;
+        }
+      }
+    }
+    ```
+  
+- 자세한 구현 사항은 **기술 블로그** 참고 부탁드립니다.
 
 <br />
 
+ 📌 [Suspense를 이용한 Dynamic Import](https://qjatjs123123.tistory.com/37)
+ 
+</details>
+<br />
 
 
 ## 기술 블로그
